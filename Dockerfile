@@ -28,10 +28,8 @@ ENV LC_ALL en_US.UTF-8
 # Install build script
 USER root
 COPY ./build_script.sh /usr/local/bin/
-RUN ls
-RUN ls /usr/local/bin/
 RUN chmod -R 777 /usr/local/bin/build_script.sh
-
+RUN mkdir -p /workdir/
 # set project specific stuff
 # ENV PROJECT bbb
 # ENV TYPE core-image-minimal
@@ -47,6 +45,9 @@ USER $USER_NAME
 # RUN groupadd -g $host_gid $USER_NAME && useradd -g $host_gid -m -s /bin/bash -u $host_uid $USER_NAME
 
 ENTRYPOINT ["build_script.sh"]
+
+# DEBUG
+# CMD tail -f /dev/null
 
 # Clone repository
 # WORKDIR /home/$USER_NAME
