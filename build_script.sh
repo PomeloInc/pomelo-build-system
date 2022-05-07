@@ -12,8 +12,10 @@ where:
 
 # constants
 YOCTO=/workdir/yocto
+BOARD="bbb"
+RECIPE="core-image-minimal"
 
-options=':h:b:r:c:'
+options=':hi:b:r:c:'
 while getopts $options option; do
   case "$option" in
     h) echo "$usage"; exit;;
@@ -25,16 +27,21 @@ while getopts $options option; do
   esac
 done
 
-# mandatory arguments
-if [ ! "$BOARD" && ! "$RECIPE"] || [ ! "$YOCTO_CMD" ]; then
-  echo "arguments -b and -r must be provided"
-  echo "$usage" >&2; exit 1
+# source poky/oe-init-build-env
+if [ "$BOARD" ] && [ "$RECIPE" ]; then
+    source $YOCTO/poky/oe-init-build-env $YOCTO/board/$BOARD/
+    echo "$RECIPE"
+    bitbake $RECIPE
+else
+    echo "bad input"
 fi
 
-# source poky/oe-init-build-env
-source $YOCTO/poky/oe-init-build-env $YOCTO/board/bbb/
-# bitbake core-image-minimal
- 
+# mandatory arguments
+if [ ! "$BOARD" ] && [ ! "$RECIPE" ] || [ ! "$YOCTO_CMD" ]; then
+  echo "$usage" >&2; exit 1
+  echo "arguments -b and -r or -c must be provided"
+fi
+
 # DEBUG
 echo "Hello World"
 echo "BOARD=$1"
