@@ -11,9 +11,10 @@ where:
     -c  a yocto-project based command you want to execute instead (e.g. devtool)"
 
 # constants
-YOCTO=/workdir/yocto
-BOARD="bbb"
-RECIPE="core-image-minimal"
+YOCTO_DIR=/workdir/yocto
+BOARD=""
+RECIPE=""
+YOCTO_CMD=""
 
 options=':hi:b:r:c:'
 while getopts $options option; do
@@ -22,30 +23,36 @@ while getopts $options option; do
     b) BOARD=$OPTARG;;
     r) RECIPE=$OPTARG;;
     c) YOCTO_CMD=$OPTARG;;
-    :) printf "missing argument for -%s\n" "$OPTARG" >&2; echo "$usage" >&2; exit 1;;
-   \?) printf "illegal option: -%s\n" "$OPTARG" >&2; echo "$usage" >&2; exit 1;;
+    :) echo "missing argument for -%s\n" "$OPTARG" >&2; echo "$usage" >&2; exit 1;;
+   \?) echo "illegal option: -%s\n" "$OPTARG" >&2; echo "$usage" >&2; exit 1;;
   esac
 done
 
-# source poky/oe-init-build-env
-if [ "$BOARD" ] && [ "$RECIPE" ]; then
-    source $YOCTO/poky/oe-init-build-env $YOCTO/board/$BOARD/
-    echo "$RECIPE"
-    bitbake $RECIPE
-else
-    echo "bad input"
+# mandatory arguments
+if [ ! "$BOARD" ]; then
+  echo "argument -b must be provided"
+fi
+if [ ! "$YOCTO_CMD" ] && [ ! "$RECIPE" ] ; then
+  echo "argument -r or -c must be provided"
+  echo "$usage" >&2; exit 1
 fi
 
-# mandatory arguments
-if [ ! "$BOARD" ] && [ ! "$RECIPE" ] || [ ! "$YOCTO_CMD" ]; then
-  echo "$usage" >&2; exit 1
-  echo "arguments -b and -r or -c must be provided"
+# source poky/oe-init-build-env and do something yocto
+if [ "$RECIPE" ]; then
+    source $YOCTO_DIR/poky/oe-init-build-env $YOCTO_DIR/board/$BOARD/
+    bitbake $RECIPE
+elif [ "$YOCTO_CMD" ] ; then
+    source $YOCTO_DIR/poky/oe-init-build-env $YOCTO_DIR/board/$BOARD/
+    $YOCTO_CMD
+else
+    echo "$usage" >&2; exit 1
 fi
 
 # DEBUG
-echo "Hello World"
-echo "BOARD=$1"
-echo "RECIPE$2"
-echo "BOARD=$BOARD"
-echo "RECIPE=$RECIPE"
+# printf "\n\n\nDEBUG:\n"
+# echo "BOARD=$1"
+# echo "RECIPE$2"
+# echo "BOARD=$BOARD"
+# echo "RECIPE=$RECIPE"
+# echo "YOCTO_CMD=$YOCTO_CMD"
 
